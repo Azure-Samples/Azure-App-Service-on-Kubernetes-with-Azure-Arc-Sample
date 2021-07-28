@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@inject IWebAssemblyHostEnvironment HostEnvironment;
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main">
+        @if (HostEnvironment.Environment == "Development")
+        {
+            <div class="top-row px-4">
+                <a href="/swagger/index.html">API Swagger</a>
+            </div>
+        }
+        <div class="content px-4">
+            @Body
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+﻿@page "/addRatings"
+
+@using Ratings.Shared
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+<h3>Please add a new rating record</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th><label for="id">Id</label></th>
+            <th><label for="rating">Rating</label></th>
+            <th><label for="usernotes">User notes</label></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th><input type="text" @bind="ratings.Id" @oninput="OnFieldChanged"/></th>
+            <th><input type="number" @bind="ratings.Rating" @oninput="OnFieldChanged"/></th>
+            <th><input type="text" @bind="ratings.UserNotes" @oninput="OnFieldChanged"/></th>
+        </tr>
+    </tbody>
+</table>
+<br>
+<button class="btn btn-primary" @onclick="OnAdd">Add</button>
+<br>
+<br>
+@if (validationError)
+{
+    <i>Please input a valid id.</i>
+
+}
+else if (ratingExistsError)
+{
+    <i>Rating with this id already exists.</i>
+}
+
+
+
+@code {
+    private RatingModel ratings = new RatingModel();
+    private bool validationError;
+    private bool ratingExistsError;
+
+    private async Task OnAdd()
+    {
+        validationError = false;
+        ratingExistsError = false;
+        HttpResponseMessage httpResponse = await Http.PostAsJsonAsync<RatingModel>("ratings", ratings);
+        if (httpResponse.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            validationError = true;
+        }
+        else if (httpResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            ratingExistsError = true;
+        }
+        else if (httpResponse.IsSuccessStatusCode)
+        {
+            NavManager.NavigateTo("/getRatings");
+        }
+    }
+
+    private void OnFieldChanged()
+    {
+        validationError = false;
+        ratingExistsError = false;
+    }
+}

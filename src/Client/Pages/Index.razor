@@ -1,0 +1,39 @@
+﻿@page "/"
+
+@using Ratings.Shared
+@inject NavigationManager NavManager
+
+<h1>Welcome to the Ratings page!</h1><br>
+<h5>
+    This Web app is deployed as Azure App Service on Arc enabled Kubernetes clusters.<br>
+    Ratings Web app allows user to see a list of ratings and add a new rating.<br>
+    The ratings are stored in an in-memory database.
+</h5><br>
+<br>
+<text>To find the particular rating please enter a rating id. Leave the field blank to see all ratings list.</text><br>
+<label for="id">Rating id:</label>
+<input type="text" @bind="ratings.Id" />
+<button @onclick="OnFind">Find</button><br>
+<br>
+<text>To add a new rating please press the</text> 
+<button @onclick="OnAdd">Add</button>
+<text>button.</text>
+
+
+@code {
+    private RatingModel ratings = new RatingModel();
+
+
+    private void OnFind()
+    {
+        if (ratings.Id is not null)
+            NavManager.NavigateTo($"/getRatings/{ratings.Id}");
+        else
+            NavManager.NavigateTo("/getRatings");
+    }
+
+    private void OnAdd()
+    {
+        NavManager.NavigateTo("/addRatings");
+    }
+}
