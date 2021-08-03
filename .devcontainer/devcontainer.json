@@ -1,0 +1,44 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.177.0/containers/dotnet
+{
+	"name": "Arc-enabled App Service Sample",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": { 
+			"VARIANT": "5.0"
+		}
+	},
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "pwsh",
+		"razor.disableBlazorDebugPrompt": true,
+		"dotnetAcquisitionExtension.existingDotnetPath": [
+			"/usr/share/dotnet"
+		],
+		"omnisharp.useGlobalMono": "never",
+		"omnisharp.enableRoslynAnalyzers": true
+	},
+
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"ms-dotnettools.csharp",
+		"scottsauber.blazorsnippets",
+		"davidanson.vscode-markdownlint",
+		"ms-kubernetes-tools.vscode-kubernetes-tools",
+		"eridem.vscode-postman",
+		"ms-azuretools.vscode-bicep",
+		"ms-azuretools.vscode-docker",
+		"shd101wyy.markdown-preview-enhanced",
+		"ms-dotnettools.blazorwasm-companion",
+		"ms-vscode.powershell",
+		"ms-dotnettools.vscode-dotnet-runtime"
+	],
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		5000, 5001, 44344
+	],
+
+	"onCreateCommand": "cd ./src && dotnet restore && cd .."
+}

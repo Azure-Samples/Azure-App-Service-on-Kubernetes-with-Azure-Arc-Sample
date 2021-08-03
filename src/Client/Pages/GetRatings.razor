@@ -1,0 +1,121 @@
+﻿@page "/getRatings"
+@page "/getRatings/{id}"
+
+@using Ratings.Shared
+@inject HttpClient Http
+
+<h1>Ratings list</h1>
+
+@if (ratings == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Rating</th>
+                <th>User notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rating in ratings)
+            {
+                <tr>
+                    <td>@rating.Id</td>
+                    <td>@rating.Rating</td>
+                    <td>@rating.UserNotes</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <br>
+    <label for="id">Rating id:</label>
+    <input type="text" @bind="id" @oninput="OnIdChanged"/>
+    <button @onclick="OnFilter">Filter</button><br>
+    <br>
+
+    @if (ratingNotFound)
+    { 
+        <i>Sorry, there is no record for this id.</i>
+
+    }
+    else if (unknownError)
+    {
+        <i> Sorry, the error occured. Please reload the page.</i>
+    }
+}
+
+
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+
+    private IEnumerable<RatingModel> ratings;
+    private bool unknownError;
+    private bool ratingNotFound;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RetrieveRatings();
+        id = "";
+    }
+
+    private async Task OnFilter()
+    {
+        await RetrieveRatings();
+        id = "";
+    }
+
+    private void OnIdChanged()
+    {
+        ratingNotFound = false;
+        unknownError = false;
+    }
+
+    private async Task RetrieveRatings()
+    {
+        ratingNotFound = false;
+        unknownError = false;
+
+        if (id is not null && id != String.Empty)
+        {
+            ratings = await GetRatingById(id);
+        }
+        else
+            ratings = await Http.GetFromJsonAsync<RatingModel[]>("ratings");
+    }
+
+    private async Task<IEnumerable<RatingModel>> GetRatingById(string id)
+    {
+        ratings = null;
+
+        HttpResponseMessage httpResponse = await Http.GetAsync($"ratings/{id}");
+        RatingModel rating = null;
+        ratings = new List<RatingModel>();
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            rating = await httpResponse.Content.ReadFromJsonAsync<RatingModel>();
+            if (rating is not null)
+            {
+                List<RatingModel> ratingsList = new List<RatingModel>();
+                ratingsList.Add(rating);
+                ratings = ratingsList;
+            }
+        }
+        else if (httpResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            ratingNotFound = true;
+        }
+        else
+        {
+            unknownError = true;
+        }
+        return ratings;
+    }
+}
