@@ -24,3 +24,6 @@ $global:kubeEnvironmentName="${baseName}-kube"
 $global:apiManagementName="${basename}-apim"
 $global:apimNamespace="${baseName}-apim"
 $global:apimExtension="${baseName}-apim-ext"
+
+$global:logWorkspaceName="${baseName}-loganalytics"
+$global:appInsightsName = "${baseName}-appinsights"

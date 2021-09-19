@@ -2,16 +2,24 @@ param location string
 param baseName string
 param kubeEnvironmentId string
 param customLocationId string
-param acrLoginServer string
-param acrUsername string
-param acrPassword string
 param imageName string
-param appInsightsConnectionString string
+param appInsightsName string
+param acrName string
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsightsName
+}
+
+resource acr 'Microsoft.ContainerRegistry/registries@2019-05-01' existing = {
+  name: acrName
+}
+
+var acrCredentials = acr.listCredentials()
 
 var appServPlanName = '${baseName}-appservplan'
 var webAppName = '${baseName}-webapp'
 
-resource appservplan 'microsoft.Web/serverfarms@2021-01-01' = {
+resource appservplan 'Microsoft.Web/serverfarms@2021-01-15' = {
   name: appServPlanName
   location: location
   kind: 'linux,kubernetes'
@@ -24,10 +32,6 @@ resource appservplan 'microsoft.Web/serverfarms@2021-01-01' = {
     name: customLocationId
   }
   properties: {
-    name: appServPlanName
-    location: location
-    workerSizeId: 0
-    numberOfWorkers: 1
     kubeEnvironmentProfile: {
         id: kubeEnvironmentId
     }
@@ -35,7 +39,7 @@ resource appservplan 'microsoft.Web/serverfarms@2021-01-01' = {
   }
 }
 
-resource appserv 'microsoft.Web/sites@2016-09-01' = {
+resource appserv 'Microsoft.Web/sites@2021-01-15' = {
   name: webAppName
   location: location
   kind: 'linux,kubernetes,app,container'
@@ -44,26 +48,26 @@ resource appserv 'microsoft.Web/sites@2016-09-01' = {
     name: customLocationId
   }
   properties: {
-    name: webAppName
+    // name: webAppName
     serverFarmId: appservplan.id
     siteConfig: {
-      linuxFxVersion: 'DOCKER|${acrLoginServer}/${imageName}'
+      linuxFxVersion: 'DOCKER|${acr.properties.loginServer}/${imageName}'
       appSettings: [
         {
           name: 'DOCKER_REGISTRY_SERVER_URL'
-          value: 'https://${acrLoginServer}'
+          value: 'https://${acr.properties.loginServer}'
         }
         {
           name: 'DOCKER_REGISTRY_SERVER_USERNAME'
-          value: acrUsername
+          value: acrCredentials.username
         }
         {
           name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
-          value: acrPassword
+          value: acrCredentials.passwords[0].value
         }
         {
           name: 'ApplicationInsights__ConnectionString'
-          value: appInsightsConnectionString
+          value: appInsights.properties.ConnectionString
         }
         {
           name: 'ASPNETCORE_ENVIRONMENT'

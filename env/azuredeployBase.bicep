@@ -1,8 +1,7 @@
-param baseName string
 param clusterName string
 param acrName string
-
-var appInsightsName = '${baseName}-appinsights'
+param logWorkspaceName string
+param appInsightsName string
 
 resource aks 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
   name: clusterName
@@ -28,10 +27,23 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-03-01' = {
     'servicePrincipalProfile': {
       'clientId': 'msi'
     }
+    'addonProfiles':{
+      'omsagent': {
+        'config': {
+          'logAnalyticsWorkspaceResourceID': logworkspace.id
+        }
+        'enabled': true
+      }
+    }
   }
   'identity': {
     'type': 'SystemAssigned'
-    }
+    }  
+}
+
+resource logworkspace 'Microsoft.OperationalInsights/workspaces@2020-10-01' = {
+  name: logWorkspaceName
+  location: resourceGroup().location
 }
 
 resource monitor 'microsoft.insights/components@2020-02-02-preview' = {
@@ -40,6 +52,7 @@ resource monitor 'microsoft.insights/components@2020-02-02-preview' = {
   kind: 'web'
   properties: {
     Application_Type: 'web'
+    WorkspaceResourceId: logworkspace.id
   }
 }
 
@@ -55,6 +68,5 @@ resource acr 'Microsoft.ContainerRegistry/registries@2020-11-01-preview' = {
 }
 
 output nodeResourceGroup string = aks.properties.nodeResourceGroup
-output connectionString string = monitor.properties.ConnectionString
 output acrLoginServer string = acr.properties.loginServer
 

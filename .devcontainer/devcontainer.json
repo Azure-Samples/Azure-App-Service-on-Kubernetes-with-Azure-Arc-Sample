@@ -3,10 +3,7 @@
 {
 	"name": "Arc-enabled App Service Sample",
 	"build": {
-		"dockerfile": "Dockerfile",
-		"args": { 
-			"VARIANT": "5.0"
-		}
+		"dockerfile": "Dockerfile"
 	},
 
 	// Set *default* container specific settings.json values on container create.
@@ -22,22 +19,27 @@
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
+		"ms-dotnettools.vscode-dotnet-runtime",
 		"ms-dotnettools.csharp",
-		"scottsauber.blazorsnippets",
 		"davidanson.vscode-markdownlint",
 		"ms-kubernetes-tools.vscode-kubernetes-tools",
 		"eridem.vscode-postman",
 		"ms-azuretools.vscode-bicep",
 		"ms-azuretools.vscode-docker",
 		"shd101wyy.markdown-preview-enhanced",
-		"ms-dotnettools.blazorwasm-companion",
 		"ms-vscode.powershell",
-		"ms-dotnettools.vscode-dotnet-runtime"
+		"ms-dotnettools.blazorwasm-companion",
+		"scottsauber.blazorsnippets"
 	],
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		5000, 5001, 44344
+	"runArgs": [
+		"--init",
+		"--network=host",
+	],
+
+	// Comment the below mounts section out if not using the WSL backend for docker
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	],
 
 	"onCreateCommand": "cd ./src && dotnet restore && cd .."
