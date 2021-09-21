@@ -2,10 +2,15 @@
 
 ## Introduction
 
-The aim of this project is to illustrate a simple  Azure App Service example running on an ARC-enabled Kubernetes cluster, with APIs exposed using an external API Management Gateway in the Kubernetes cluster.
+The aim of this project is to illustrate a simple Azure App Service example running on an ARC-enabled Kubernetes cluster, with APIs exposed using an external API Management Gateway in the Kubernetes cluster.
 This Web App allows user to read and create a rating of a product. It is a single web page that calls APIs hosted by the server component. When deployed to Azure, the API Management Gateway exposes some of the APIs from within the cluster.
 
 ![Architecture Diagram](./docs/SolutionDiagramAppServiceSample.png)
+
+Background reading:
+
+* [App Service, Functions, and Logic Apps on Azure Arc (Preview)](https://docs.microsoft.com/en-US/Azure/app-service/overview-arc-integration)
+* [Deploy an Azure API Management gateway on Azure Arc (preview)](https://docs.microsoft.com/en-us/azure/api-management/how-to-deploy-self-hosted-gateway-azure-arc)
 
 ## Local Build and Test
 
@@ -19,7 +24,7 @@ This Web App allows user to read and create a rating of a product. It is a singl
 
 1. Open the folder you cloned in VS Code.
 1. Re-open the window in a dev container. You'll need Docker and the [Remote Development Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) installed. This container has all the tools and cli extensions you'll need preinstalled. If you can't open the dev container, check ./devcontainer/Dockerfile for the prerequisites.
-1. Press f5 - you may ignore any warning regarding the webasm debugging extension if you already have it installed.
+1. Press f5 - you may ignore any warnings or errors regarding the webasm debugging extension if you already have it installed.
 1. Open a browser at the url `https://locahost:5000`
 
 Follow the on screen instructions to add or view ratings.
@@ -63,11 +68,15 @@ Follow the on screen instructions to add or view ratings.
 
 1. Open the folder you cloned in VS Code.
 1. Re-open the window in a dev container. You'll need Docker and the [Remote Development Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) installed. This container has all the tools and cli extensions you'll need preinstalled. If you can't open the dev container, check ./devcontainer/Dockerfile for the prerequisites.
-    >[!TIP]
-    >Windows users may face an error while opening the dev container due to Windows style newline characters being added that are not recognized by the bash script from the dev container while cloning the repo. To fix this run 'git config --global core.autocrlf input' in the admin mode. You can find more information [here](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration).
-
-    >[!TIP]
-    >Make sure that Docker setting 'Expose daemon on tcp://localhost:2375 without TLS' is enabled, so the docker daemon is running in the container.
+    > [!TIP]
+    > Windows users may face an error while opening the dev container due to Windows style newline characters being added that are not recognized by the bash script from the dev container while cloning the repo. To fix this run 'git config --global core.autocrlf input' in the admin mode. You can find more information [here](https://www.git-scm.com/book/en/v2/Customizing-Git-Git-Configuration).
+    >
+    > [!TIP]
+    > If using WSL1 or Docker *without* the WSL backend:
+    >
+    > 1. Make sure that Docker setting 'Expose daemon on tcp://localhost:2375 without TLS' is enabled, so the docker daemon is running in the container.
+    > 2. Uncomment the line `# ENV DOCKER_HOST=tcp://host.docker.internal:2375` in the `./.devcontainer/Dockerfile`.
+    > 3. Comment out the `mounts` section in teh `./.devcontainer/devcontainer.json` file.
 
 1. Open the integrated PowerShell 7 terminal (pwsh)
 1. Log into your Azure subscription using 'az login'.
@@ -145,6 +154,9 @@ kubectl logs $podName -n ${apimNamespace}
 
 ## Resources
 
-* [App Service on Arc-enabled Kubernetes](https://docs.microsoft.com/en-us/azure/app-service/manage-create-arc-environment)
-* [Deploy APIM on Azure ARC](https://docs.microsoft.com/en-us/azure/api-management/how-to-deploy-self-hosted-gateway-azure-arc)
+* [App Service, Functions, and Logic Apps on Azure Arc (Preview)](https://docs.microsoft.com/en-US/Azure/app-service/overview-arc-integration)
+* [Set up an Azure Arc enabled Kubernetes cluster to run App Service, Functions, and Logic Apps (Preview)](https://docs.microsoft.com/en-us/azure/app-service/manage-create-arc-environment)
+* [Deploy an Azure API Management gateway on Azure Arc (preview)](https://docs.microsoft.com/en-us/azure/api-management/how-to-deploy-self-hosted-gateway-azure-arc)
+* [Cluster extensions on Azure Arc-enabled Kubernetes](https://docs.microsoft.com/en-us/azure/azure-arc/kubernetes/conceptual-extensions)
+* [Deploy and manage Azure Arc-enabled Kubernetes cluster extensions](https://docs.microsoft.com/en-us/azure/azure-arc/kubernetes/extensions)
 * [Programmatically generate access tokens for gateways](https://docs.microsoft.com/en-us/rest/api/apimanagement/2019-12-01/gateway/generate-token)

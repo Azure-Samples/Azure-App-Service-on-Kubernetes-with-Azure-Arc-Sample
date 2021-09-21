@@ -2,11 +2,11 @@
 # create a compliant AKS cluster, an Azure Container Registry instance, an Application Insights Monitoring resource, and a public static IP address
 az group create -n $groupName -l $location
 
-az deployment group create --name "${baseName}-aks" -g $aksClusterGroupName --template-file  azuredeployBase.bicep  --parameters baseName=$baseName clusterName=$clusterName acrName=$acrName --verbose  
+az deployment group create --name "${baseName}-aks" -g $aksClusterGroupName --template-file  azuredeployBase.bicep  --parameters clusterName=$clusterName acrName=$acrName logWorkspaceName=$logWorkspaceName appInsightsName=$appInsightsName --verbose  
 
-$global:nodeResourceGroup = (az deployment group show  -g $aksClusterGroupName -n "${baseName}-aks" -o tsv --query properties.outputs.nodeResourceGroup.value)
-$global:connectionString = (az deployment group show  -g $aksClusterGroupName -n "${baseName}-aks" -o tsv --query properties.outputs.connectionString.value)
-$global:acrLoginServer = (az deployment group show  -g $aksClusterGroupName -n "${baseName}-aks" -o tsv --query properties.outputs.acrLoginServer.value)
+$outputs=$(az deployment group show  -g $aksClusterGroupName -n "${baseName}-aks" --query properties.outputs) | ConvertFrom-Json
+$global:nodeResourceGroup = $outputs.nodeResourceGroup.value
+$global:acrLoginServer = $outputs.acrLoginServer.value
 
 az deployment group create -g $nodeResourceGroup  --name "${baseName}-IP"  --template-file azuredeployIPAddress.bicep --parameters staticIpName=$staticIpName --verbose
 

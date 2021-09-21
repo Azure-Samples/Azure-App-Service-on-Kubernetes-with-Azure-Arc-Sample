@@ -1,5 +1,5 @@
 param(
-[string]$version
+[string]$version = "v1"
 )
 
 if ($version -eq "") {
@@ -12,9 +12,9 @@ Set-Location ../src
 # build and package the dotnet code in a Release mode
 dotnet publish Server/Ratings.Server.csproj -o ./Publish --configuration Release
 
-# build Dockerfile into an image passing the Connection String of created Application Insights resource
+# build Dockerfile into an image
 $imageName = "${baseName}:${version}" 
-docker build --build-arg BUILDTIME_CONNECTION_STRING=$connectionString -t $imageName .
+docker build -t $imageName .
 
 # login to the ACR created in provisionBaseInfra.ps1
 az acr login --name $acrName
@@ -25,16 +25,11 @@ docker tag "docker.io/library/${imageName}" "${acrLoginServer}/${imageName}"
 # push the docker image to the ACR
 docker push "${acrLoginServer}/${imageName}"
 
-
-# provision App Service Plan and a containerized Web App from Azure Container Registry image
-$acrUsername = (az acr credential show -n $acrName -o tsv --query username) 
-$acrPassword = (az acr credential show -n $acrName -o tsv --query passwords[0].value) 
-
 Set-Location ../env
-az deployment group create --name "${baseName}-appServ" -g $groupName --template-file  azuredeployAppService.bicep  --parameters location=$location baseName=$baseName kubeEnvironmentId=$kubeEnvironmentId customLocationId=$customLocationId acrLoginServer=$acrLoginServer acrUsername=$acrUsername acrPassword=$acrPassword imageName=$imageName appInsightsConnectionString=$connectionString
+az deployment group create --name "${baseName}-appServ" -g $groupName --template-file  azuredeployAppService.bicep  --parameters location=$location baseName=$baseName kubeEnvironmentId=$kubeEnvironmentId customLocationId=$customLocationId imageName=$imageName appInsightsName=$appInsightsName acrName=$acrName
 
 $global:appUrl = az webapp show -n ${baseName}-webapp -g $groupName -o tsv --query 'defaultHostName'
-$statusCode = $(Invoke-WebRequest -Uri $appUrl).StatusCode
+$statusCode = $(Invoke-WebRequest -Uri $appUrl -SkipHttpErrorCheck).StatusCode
 
 if ($statusCode -eq 200) 
 { 

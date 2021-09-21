@@ -1,9 +1,13 @@
 param apiManagementName string
 param ratingsAppName string
-
+param appInsightsName string
 
 resource appserv 'microsoft.Web/sites@2020-12-01' existing = {
   name: ratingsAppName
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsightsName
 }
 
 resource apiManagement 'Microsoft.ApiManagement/service@2020-12-01' = {
@@ -16,6 +20,24 @@ resource apiManagement 'Microsoft.ApiManagement/service@2020-12-01' = {
   properties: {
     publisherEmail: 'api-publisher@contoso.com'
     publisherName: 'publisher name'
+  }
+
+  resource appInsightsLogger 'loggers' = {
+    name: appInsights.name
+    properties: {
+      loggerType: 'applicationInsights'
+      credentials: {
+        instrumentationKey: appInsights.properties.InstrumentationKey
+      }
+    }
+  }
+
+  resource appInsightsDiagnostics 'diagnostics' = {
+    name: 'applicationinsights'
+    properties: {
+      loggerId: appInsightsLogger.id
+      logClientIp: true
+    }
   }
 
   resource ratingsBackend 'backends@2020-12-01' = {
@@ -72,5 +94,6 @@ resource apiManagement 'Microsoft.ApiManagement/service@2020-12-01' = {
 
 output gatewayManagementUrl string = '${apiManagement.properties.managementApiUrl}${apiManagement.id}'
 output gatewayTokenUrl string = '${environment().resourceManager}${apiManagement::ratingsGateway.id}/generateToken?api-version=2019-12-01'
+output apimResourceId string = apiManagement.id
 
 
